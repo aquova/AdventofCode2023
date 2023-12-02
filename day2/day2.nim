@@ -1,58 +1,46 @@
-import re, strutils
+import strutils
 
 const RED_MAX = 12
 const GREEN_MAX = 13
 const BLUE_MAX = 14
 
-proc isValid(input: string): bool =
-    let red_matches = input.findAll(re"\d+ red")
-    for r in red_matches:
-        let words = r.split(" ")
-        if parseInt(words[0]) > RED_MAX:
-            return false
+type Cube = tuple
+    r, g, b: int
 
-    let green_matches = input.findAll(re"\d+ green")
-    for g in green_matches:
-        let words = g.split(" ")
-        if parseInt(words[0]) > GREEN_MAX:
-            return false
+proc isValid(self: Cube): bool =
+    return self.r <= RED_MAX and self.g <= GREEN_MAX and self.b <= BLUE_MAX
 
-    let blue_matches = input.findAll(re"\d+ blue")
-    for b in blue_matches:
-        let words = b.split(" ")
-        if parseInt(words[0]) > BLUE_MAX:
-            return false
-    return true
+proc getPower(self: Cube): int =
+    return self.r * self.g * self.b
 
-proc getPower(input: string): int =
-    var r_power, g_power, b_power = 0
-
-    let red_matches = input.findAll(re"\d+ red")
-    for r in red_matches:
-        let words = r.split(" ")
-        r_power = max(r_power, parseInt(words[0]))
-
-    let green_matches = input.findAll(re"\d+ green")
-    for g in green_matches:
-        let words = g.split(" ")
-        g_power = max(g_power, parseInt(words[0]))
-
-    let blue_matches = input.findAll(re"\d+ blue")
-    for b in blue_matches:
-        let words = b.split(" ")
-        b_power = max(b_power, parseInt(words[0]))
-    return r_power * g_power * b_power
+proc parseCube(input: string): Cube =
+    result.r = 0
+    result.g = 0
+    result.b = 0
+    let blocks = input.split({':', ',', ';'})
+    for b in blocks:
+        let words = b.strip(leading=true, trailing=true).split(" ")
+        case words[1]:
+            of "red":
+                result.r = max(result.r, parseInt(words[0]))
+            of "green":
+                result.g = max(result.g, parseInt(words[0]))
+            of "blue":
+                result.b = max(result.b, parseInt(words[0]))
+            else:
+                discard
 
 proc day2p1*(input: string): string =
     var total = 0
     for idx, line in input.splitLines().pairs():
-        let valid = line.isValid()
-        if valid:
+        let cube = line.parseCube()
+        if cube.isValid():
             total += idx + 1
     return $total
 
 proc day2p2*(input: string): string =
     var total = 0
     for line in input.splitLines():
-        total += line.getPower()
+        let cube = line.parseCube()
+        total += cube.getPower()
     return $total
