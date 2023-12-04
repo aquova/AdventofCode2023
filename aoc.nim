@@ -5,11 +5,13 @@ type DayProc = proc(input: string): string
 import day1/day1
 import day2/day2
 import day3/day3
+import day4/day4
 
 const FUNCTION_TABLE = {
   "day1p1": DayProc(day1p1), "day1p2": DayProc(day1p2),
   "day2p1": DayProc(day2p1), "day2p2": DayProc(day2p2),
   "day3p1": DayProc(day3p1), "day3p2": DayProc(day3p2),
+  "day4p1": DayProc(day4p1), "day4p2": DayProc(day4p2),
 }.toTable()
 
 proc main() =
