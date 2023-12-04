@@ -2,13 +2,10 @@ import math, sequtils, strutils, sugar
 
 proc getNumMatches(line: string): int =
     let sections = line.split({':', '|'})
-    let winners = collect:
-        for x in sections[1].splitWhitespace():
-            parseInt(x)
+    let winners = sections[1].splitWhitespace()
     let matches = collect:
         for x in sections[2].splitWhitespace():
-            let ix = parseInt(x)
-            if ix in winners: ix
+            if x in winners: x
     return matches.len()
 
 proc day4p1*(input: string): string =
