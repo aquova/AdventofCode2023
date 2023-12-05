@@ -1,5 +1,3 @@
-from algorithm import sorted
-
 type Range*[T] = object
     left, right: T
 
@@ -18,20 +16,6 @@ proc merge*[T](a: Range[T], b: Range[T]): Range[T] =
 
 proc cmp*[T](a: Range[T], b: Range[T]): int =
     return system.cmp(a.left, b.left)
-
-proc combine*[T](ranges: seq[Range[T]]): seq[Range[T]] =
-    let sorted = sorted(ranges, cmp)
-    var current = sorted[0]
-    var idx = 1
-    while idx < sorted.len():
-        let other = sorted[idx]
-        if current.overlaps(other):
-            current = current.merge(other)
-        else:
-            result.add(current)
-            current = other
-        inc(idx)
-    result.add(current)
 
 proc size*[T](r: Range[T]): T =
     return r.right - r.left + 1
