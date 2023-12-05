@@ -4,15 +4,7 @@ type Map = tuple
     src, dst, n: int
 
 type Entry = seq[Map]
-
-type Almanac = object
-    seed_sol: Entry
-    soil_fertilizer: Entry
-    fertilizer_water: Entry
-    water_light: Entry
-    light_temp: Entry
-    temp_humidity: Entry
-    humidity_location: Entry
+type Almanac = seq[Entry]
 
 proc contains(self: Map, v: int): bool =
     return self.src <= v and v < self.src + self.n
@@ -32,24 +24,14 @@ proc getValue(self: Entry, v: int): int =
     return v
 
 proc newAlmanac(raw: seq[string]): Almanac =
-    # This could just be a single seq[Entry], but this helps me think
-    result.seed_sol = parseEntry(raw[0])
-    result.soil_fertilizer = parseEntry(raw[1])
-    result.fertilizer_water = parseEntry(raw[2])
-    result.water_light = parseEntry(raw[3])
-    result.light_temp = parseEntry(raw[4])
-    result.temp_humidity = parseEntry(raw[5])
-    result.humidity_location = parseEntry(raw[6])
+    for e in raw:
+        let entry = parseEntry(e)
+        result.add(entry)
 
-proc getSeedLocation(self: Almanac, seed: int): int =
-    let soil = self.seed_sol.getValue(seed)
-    let fert = self.soil_fertilizer.getValue(soil)
-    let water = self.fertilizer_water.getValue(fert)
-    let light = self.water_light.getValue(water)
-    let temp = self.light_temp.getValue(light)
-    let humid = self.temp_humidity.getValue(temp)
-    let loc = self.humidity_location.getValue(humid)
-    return loc
+proc getSeedLocation(info: Almanac, seed: int): int =
+    result = seed
+    for entry in info:
+        result = entry.getValue(result)
 
 proc day5p1*(input: string): string =
     let raw = input.split("\n\n")
@@ -62,14 +44,40 @@ proc day5p1*(input: string): string =
         lowest = min(loc, lowest)
     return $lowest
 
-proc day5p2*(input: string): string =
-    let raw = input.split("\n\n")
-    let info = newAlmanac(raw[1..<raw.len()])
-    let seeds = raw[0].split(':')[1].splitWhitespace().map(proc(x: string): int = parseInt(x))
-    var lowest = high(int)
-    for idx in countup(0, seeds.len() - 1, 2):
-        for si in countup(seeds[idx], seeds[idx] + seeds[idx + 1] - 1):
-            let loc = info.getSeedLocation(si)
-            lowest = min(loc, lowest)
-        echo("Block done")
-    return $lowest
+when defined(multithreaded):
+    import sugar, threadpool
+    {.experimental: "parallel".}
+
+    type seedRange = tuple
+        start, stop: int
+
+    proc parallelHelper(info: Almanac, range: seedRange): int =
+        result = high(int)
+        for s in countup(range.start, range.stop):
+            let loc = info.getSeedLocation(s)
+            result = min(loc, result)
+
+    proc day5p2*(input: string): string =
+        let raw = input.split("\n\n")
+        let info = newAlmanac(raw[1..raw.high()])
+        let seeds = raw[0].split(':')[1].splitWhitespace().map(proc(x: string): int = parseInt(x))
+        let ranges: seq[seedRange] = collect:
+            for idx in countup(0, seeds.high, 2):
+                (seeds[idx], seeds[idx] + seeds[idx + 1] - 1)
+        var lowest = newSeq[int](ranges.len())
+        parallel:
+            for i in countup(0, lowest.high()):
+                lowest[i] = spawn parallelHelper(info, ranges[i])
+        return $min(lowest)
+else:
+    proc day5p2*(input: string): string =
+        let raw = input.split("\n\n")
+        let info = newAlmanac(raw[1..<raw.len()])
+        let seeds = raw[0].split(':')[1].splitWhitespace().map(proc(x: string): int = parseInt(x))
+        var lowest = high(int)
+        for idx in countup(0, seeds.len() - 1, 2):
+            for si in countup(seeds[idx], seeds[idx] + seeds[idx + 1] - 1):
+                let loc = info.getSeedLocation(si)
+                lowest = min(loc, lowest)
+            echo("Block done")
+        return $lowest
