@@ -1,8 +1,5 @@
 import sequtils, strutils
 
-proc last(v: seq[int]): int =
-    return v[v.high()]
-
 proc isAllZero(vals: seq[int]): bool =
     return vals.all(proc(x: int): bool = x == 0)
 
@@ -15,7 +12,7 @@ proc extrapolate(vals: seq[int], forwards: bool): seq[int] =
     if diffs.isAllZero():
         return vals
     if forwards:
-        let next = vals.last() + extrapolate(diffs, forwards).last()
+        let next = vals[^1] + extrapolate(diffs, forwards)[^1]
         return vals & next
     else:
         let prev = vals[0] - extrapolate(diffs, forwards)[0]
@@ -26,7 +23,7 @@ proc day9p1*(input: string): string =
     for line in input.splitLines():
         let vals = line.split().map(proc(x: string): int = parseInt(x))
         let ex = extrapolate(vals, true)
-        total += ex.last()
+        total += ex[^1]
     return $total
 
 proc day9p2*(input: string): string =
