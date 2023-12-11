@@ -1,9 +1,13 @@
 type Range*[T] = object
     left, right: T
 
-proc newRange*[T](left: T, right: T): Range[T] =
-    result.left = left
-    result.right = right
+proc newRange*[T](left, right: T): Range[T] =
+    if left < right:
+        result.left = left
+        result.right = right
+    else:
+        result.left = right
+        result.right = left
 
 proc contains*[T](r:Range[T], v: T): bool =
     return r.left <= v and v <= r.right
