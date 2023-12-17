@@ -23,6 +23,9 @@ proc `*`*(a: Point, v: int): Point =
 proc `*=`*(a: var Point, v: int) =
     a = a * v
 
+proc `[]`*[T](grid: seq[seq[T]], p: Point): T =
+    return grid[p.y][p.x]
+
 proc manhattan_dist*(a: Point, b: Point): int =
     return abs(a.x - b.x) + abs(a.y - b.y)
 
