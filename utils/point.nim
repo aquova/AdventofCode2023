@@ -20,6 +20,9 @@ proc `-=`*(a: var Point, b: Point) =
 proc `*`*(a: Point, v: int): Point =
     return (a.x * v, a.y * v)
 
+proc `*`*(v: int, a: Point): Point =
+    return a * v
+
 proc `*=`*(a: var Point, v: int) =
     a = a * v
 

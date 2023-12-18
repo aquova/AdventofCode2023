@@ -19,6 +19,7 @@ import day14/day14
 import day15/day15
 import day16/day16
 import day17/day17
+import day18/day18
 
 const FUNCTION_TABLE = {
   "day1p1": DayProc(day1p1), "day1p2": DayProc(day1p2),
@@ -38,6 +39,7 @@ const FUNCTION_TABLE = {
   "day15p1": DayProc(day15p1), "day15p2": DayProc(day15p2),
   "day16p1": DayProc(day16p1), "day16p2": DayProc(day16p2),
   "day17p1": DayProc(day17p1), "day17p2": DayProc(day17p2),
+  "day18p1": DayProc(day18p1), "day18p2": DayProc(day18p2),
 }.toTable()
 
 proc main() =
