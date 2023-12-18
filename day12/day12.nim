@@ -1,84 +1,47 @@
-import math, sequtils, sugar
-import strutils except repeat # Want to use sequtils's repeat, not strutils
+import sequtils, tables
+import strutils except repeat
 
-type Record = object
-    info: string
-    groups: seq[int]
+type Data = tuple
+    record_idx, num_idx, current: int
 
-proc parseInput(line: string): Record =
-    let blocks = line.split(' ')
-    result.info = blocks[0]
-    result.groups = blocks[1].split(',').map(proc(x: string): int = parseInt(x))
+proc countSolutions(record: string, nums: seq[int], record_idx, num_idx, current: int, cache: var Table[Data, int]): int =
+    if record_idx == record.len():
+        if num_idx == nums.len() and current == 0:
+            return 1
+        elif num_idx == nums.len() - 1 and nums[num_idx] == current:
+            return 1
+        else: return 0
 
-proc scaleRecord(self: var Record, scale: int) =
-    let repeat_info = self.info.repeat(scale)
-    self.info = repeat_info.join("?")
-    self.groups = self.groups.cycle(scale)
+    let key = (record_idx, num_idx, current)
+    if cache.hasKey(key):
+        return cache[key]
 
-proc generatePossibility(info: string, mask: int): string =
-    var v = mask
-    result = info
-    for idx, c in info.pairs():
-        if c == '?':
-            let nc = if (v and 1) != 0: '#' else: '.'
-            result[idx] = nc
-            v = v shr 1
-
-proc isValid(info: string, target: seq[int]): bool =
-    let groups: seq[int] = collect:
-        for c in info.split('.'):
-            if c.len() > 0: c.len()
-    return groups == target
-
-proc countPossibilities(self: Record): int =
-    result = 0
-    let unknown_count = self.info.count('?')
-    let num_possibilities = 1 shl unknown_count
-    let num_true = sum(self.groups)
-    for i in countup(0, num_possibilities - 1):
-        let p = generatePossibility(self.info, i)
-        if p.count('#') != num_true:
-            continue
-        if p.isValid(self.groups):
-            inc(result)
+    for c in ['.', '#']:
+        if record[record_idx] == c or record[record_idx] == '?':
+            if c == '.' and current == 0:
+                result += countSolutions(record, nums, record_idx + 1, num_idx, 0, cache)
+            elif c == '.' and current > 0 and num_idx < nums.len() and nums[num_idx] == current:
+                result += countSolutions(record, nums, record_idx + 1, num_idx + 1, 0, cache)
+            elif c == '#':
+                result += countSolutions(record, nums, record_idx + 1, num_idx, current + 1, cache)
+    cache[key] = result
 
 proc day12p1*(input: string): string =
     var total = 0
     for line in input.splitLines():
-        let record = parseInput(line)
-        let cnt = record.countPossibilities()
-        total += cnt
+        let words = line.split(' ')
+        let nums = words[1].split(',').map(proc(x: string): int = parseInt(x))
+        var cache: Table[Data, int]
+        total += countSolutions(words[0], nums, 0, 0, 0, cache)
     return $total
 
-when defined(multithreaded):
-    import threadpool
-    {.experimental: "parallel".}
-
-    proc parallelHelper(line: string, idx: int): int =
-        echo(idx)
-        var record = parseInput(line)
-        let single = record.countPossibilities()
-        record.scaleRecord(2)
-        let double = record.countPossibilities()
-        let scale = int(double / single)
-        return single * scale ^ 4
-
-    proc day12p2*(input: string): string =
-        let lines = input.splitLines()
-        var sums = newSeq[int](lines.len())
-        parallel:
-            for i in countup(0, sums.high()):
-                sums[i] = spawn parallelHelper(lines[i], i)
-        return $sum(sums)
-else:
-    proc day12p2*(input: string): string =
-        var total = 0
-        for idx, line in input.splitLines().pairs():
-            var record = parseInput(line)
-            let single = record.countPossibilities()
-            record.scaleRecord(2)
-            let double = record.countPossibilities()
-            let scale = int(double / single)
-            let cnt = single * scale ^ 4
-            total += cnt
-        return $total
+proc day12p2*(input: string): string =
+    var total = 0
+    for line in input.splitLines():
+        let words = line.split(' ')
+        let nums = words[1].split(',').map(proc(x: string): int = parseInt(x))
+        let extended_record = words[0].repeat(5).join("?")
+        let extended_nums = nums.cycle(5)
+        var cache: Table[Data, int]
+        total += countSolutions(extended_record, extended_nums, 0, 0, 0, cache)
+    return $total
