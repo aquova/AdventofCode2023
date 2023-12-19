@@ -26,12 +26,12 @@ proc parseGalaxies(rows: seq[string]): seq[Point] =
                 result.add((x, y))
 
 proc expandingDist(p1, p2: Point, empty: EmptySpaces, scale: int): int =
-    let x_range = newRange(p1.x, p2.x)
+    let x_range = newIntRange(p1.x, p2.x)
     var dx = x_range.size()
     for col in empty.cols:
         if x_range.contains(col):
             dx += scale - 1
-    let y_range = newRange(p1.y, p2.y)
+    let y_range = newIntRange(p1.y, p2.y)
     var dy = y_range.size()
     for row in empty.rows:
         if y_range.contains(row):
