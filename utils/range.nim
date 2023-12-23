@@ -27,6 +27,9 @@ proc cmp*(a: IntRange, b: IntRange): int =
 proc size*(r: IntRange): int =
     return r.right - r.left + 1
 
+iterator values*(r: IntRange): int =
+    for i in countup(r.left, r.right): yield i
+
 # Split left puts v to the left half, otherwise the right
 proc split*(r: IntRange, v: int, split_left: bool): seq[IntRange] =
     if not r.contains(v) or v == r.left or v == r.right: return @[r]
