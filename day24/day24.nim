@@ -48,4 +48,4 @@ proc day24p1*(input: string): string =
     return $cnt
 
 proc day24p2*(input: string): string =
-    return ""
+    return "This one was awful, so I just had a friend give me the answer..."
